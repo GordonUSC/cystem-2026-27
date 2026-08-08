@@ -359,7 +359,10 @@ hr{border:none;border-top:1px solid var(--line);margin:34px 0}
     <div class="prog">
       <div class="n" id="pnum">0 of 11 answered</div>
       <div class="bar"><div class="fill" id="pfill"></div></div>
-      <div class="n" style="opacity:.7">Saves in this browser. Nothing is sent anywhere.</div>
+      <div class="n" style="opacity:.7">Saves as you type. Nothing is sent anywhere.</div>
+      <div id="saved-flag" style="font-family:var(--f-mono);font-size:11.5px;color:var(--go);margin-top:8px;line-height:1.45">
+        &#10003; Safe to refresh. Your answers are stored on this laptop and come back automatically.
+      </div>
     </div>
   </aside>
   <main class="main">
@@ -846,7 +849,7 @@ A strong, specific year that you have shaped is the thing that gets a partner to
 <section id="feedback">
   <div class="fb-hero-bar">
     <div class="fb-hero-icon">&#x1F4AC;</div>
-    <div class="fb-hero-text"><b>New:</b> This page now listens. Drop a note below and <b>Darby replies in under five minutes</b> with a fix or a follow-up.
+    <div class="fb-hero-text"><b>This page listens.</b> Say anything below. If you would rather just text it, do that instead, it reaches the same place.
       <span class="fb-listening"><span></span><span></span><span></span></span>
     </div>
     <span class="fb-new-badge">Live feedback</span>
@@ -863,12 +866,15 @@ A strong, specific year that you have shaped is the thing that gets a partner to
     <input type="text" id="fb-title" placeholder="Short title (e.g. 'BlizzCon date is wrong')" style="width:100%;background:var(--ground);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:11px 12px;font-family:var(--f-body);font-size:15px;margin-bottom:10px">
     <textarea id="fb-body" placeholder="Details (optional). Be as specific as you like." style="min-height:76px"></textarea>
     <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-      <button class="btn" id="fb-send" type="button">Submit feedback</button>
+      <button class="btn" id="fb-send" type="button">Submit feedback</button><button class="btn ghost" id="fb-copy" type="button">Copy it to text instead</button>
       <span id="fb-status" style="font-family:var(--f-mono);font-size:12px;color:var(--muted)"></span>
     </div>
   </div>
 
-  <div id="fb-log" style="margin-top:28px"></div>
+  <div class="note" style="margin-top:14px"><b>Heads up on Submit:</b> it opens GitHub, which needs a GitHub account.
+   If you do not have one, or just cannot be bothered, hit <b>Copy it to text instead</b> and send it to Gordon.
+   Same result, and honestly the faster route.</div>
+   <div id="fb-log" style="margin-top:28px"></div>
   <div id="fb-empty" style="display:none;text-align:center;padding:28px 0;color:var(--muted);font-size:14px">
     No feedback yet. You could be the first.
   </div>
@@ -916,7 +922,7 @@ function answered(sec){
   return t||o;
 }
 function paint(){
-  const links=[...document.querySelectorAll('.rail a')];
+  const links=[...document.querySelectorAll('.rail a')].filter(a=>document.querySelector('textarea[data-q="'+a.dataset.sec+'"]'));
   let n=0;
   links.forEach(a=>{const s=a.dataset.sec; if(answered(s)){a.classList.add('answered');n++}else{a.classList.remove('answered')}});
   const total=links.length;
@@ -1027,6 +1033,16 @@ async function fbLoad(){
 }
 fbLoad();
 
+document.getElementById('fb-copy').addEventListener('click',()=>{
+  const t=document.getElementById('fb-title').value.trim();
+  const b=document.getElementById('fb-body').value.trim();
+  const s=document.getElementById('fb-status');
+  if(!t&&!b){s.textContent='Write something first.';s.style.color='var(--risk)';return;}
+  const msg='CYSTEM page feedback from Alex:\n\n'+(t?t+'\n\n':'')+(b||'');
+  navigator.clipboard.writeText(msg).then(()=>{
+    s.textContent='Copied. Paste it into a text to Gordon.'; s.style.color='var(--go)';
+  }).catch(()=>{ s.textContent='Could not copy. Select the text and copy manually.'; s.style.color='var(--risk)'; });
+});
 document.getElementById('fb-send').addEventListener('click',()=>{
   const title=document.getElementById('fb-title').value.trim();
   const body=document.getElementById('fb-body').value.trim();
@@ -1076,6 +1092,16 @@ document.querySelectorAll('section').forEach(s=>splashObserver.observe(s));
 
 // Also splash on feedback submit
 const origFbClick=document.getElementById('fb-send').onclick;
+document.getElementById('fb-copy').addEventListener('click',()=>{
+  const t=document.getElementById('fb-title').value.trim();
+  const b=document.getElementById('fb-body').value.trim();
+  const s=document.getElementById('fb-status');
+  if(!t&&!b){s.textContent='Write something first.';s.style.color='var(--risk)';return;}
+  const msg='CYSTEM page feedback from Alex:\n\n'+(t?t+'\n\n':'')+(b||'');
+  navigator.clipboard.writeText(msg).then(()=>{
+    s.textContent='Copied. Paste it into a text to Gordon.'; s.style.color='var(--go)';
+  }).catch(()=>{ s.textContent='Could not copy. Select the text and copy manually.'; s.style.color='var(--risk)'; });
+});
 document.getElementById('fb-send').addEventListener('click',()=>{
   const btn=document.getElementById('fb-send');
   const r=btn.getBoundingClientRect();
