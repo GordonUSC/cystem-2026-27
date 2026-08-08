@@ -289,6 +289,54 @@ hr{border:none;border-top:1px solid var(--line);margin:34px 0}
   .rail a{border-left:none;border:1px solid var(--line);border-radius:20px;padding:6px 12px}
   .rail a.on{border-color:var(--gold)}
 }
+
+/* ---- DELIGHT: color splash particles ---- */
+.splash-particle{position:fixed;pointer-events:none;z-index:9999;border-radius:50%;
+  animation:splash-fly .9s cubic-bezier(.25,.46,.45,.94) forwards}
+@keyframes splash-fly{
+  0%{opacity:1;transform:translate(0,0) scale(1)}
+  100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)}
+}
+
+/* ---- DELIGHT: fun fact toast ---- */
+.fun-fact-toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);
+  background:var(--surface);border:1px solid var(--gold);border-radius:12px;
+  padding:14px 20px;max-width:420px;width:calc(100% - 40px);z-index:200;
+  box-shadow:0 8px 32px rgba(0,0,0,.3);animation:toast-in .5s ease-out both;
+  font-size:14px;line-height:1.55;color:var(--ink2)}
+.fun-fact-toast .ff-label{font-family:var(--f-mono);font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--gold);margin-bottom:6px;font-weight:700}
+.fun-fact-toast .ff-close{position:absolute;top:8px;right:12px;background:none;border:none;
+  color:var(--muted);font-size:16px;cursor:pointer;padding:4px}
+@keyframes toast-in{
+  from{opacity:0;transform:translateX(-50%) translateY(20px)}
+  to{opacity:1;transform:translateX(-50%) translateY(0)}
+}
+@keyframes toast-out{
+  to{opacity:0;transform:translateX(-50%) translateY(20px)}
+}
+
+/* ---- DELIGHT: mini-game overlay ---- */
+.mini-game-overlay{position:fixed;inset:0;z-index:500;background:rgba(15,17,23,.85);
+  display:flex;align-items:center;justify-content:center;animation:fb-fadein .3s ease-out}
+.mini-game-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;
+  padding:28px;max-width:400px;width:calc(100% - 40px);text-align:center;position:relative}
+.mini-game-box h3{margin:0 0 8px;font-size:20px}
+.mini-game-box .mg-sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+.mini-game-box .mg-close{position:absolute;top:10px;right:14px;background:none;border:none;
+  color:var(--muted);font-size:18px;cursor:pointer}
+.mg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:12px auto;max-width:240px}
+.mg-cell{aspect-ratio:1;border-radius:6px;cursor:pointer;border:2px solid var(--line);
+  background:var(--surface2);font-size:20px;display:flex;align-items:center;justify-content:center;
+  transition:transform .15s,border-color .15s}
+.mg-cell:hover{border-color:var(--gold)}
+.mg-cell.matched{border-color:var(--go);background:rgba(95,184,122,.15);transform:scale(.95);cursor:default}
+.mg-cell.flipped{border-color:var(--cyan);transform:rotateY(180deg)}
+.mg-result{margin-top:14px;font-size:15px;color:var(--gold);font-weight:650}
+
+/* ---- DELIGHT: secret hover hint ---- */
+.stat:hover .v{transition:color .3s;color:var(--cyan)}
+.card:nth-child(3n+1) .q{cursor:pointer}
 </style>
 </head>
 <body>
@@ -994,6 +1042,279 @@ document.getElementById('fb-send').addEventListener('click',()=>{
   document.getElementById('fb-body').value='';
   setTimeout(()=>{status.textContent='';fbLoad();},15000);
 });
+
+// ==================================================================
+// DELIGHT LAYER 1: COLOR SPLASHES
+// Random confetti bursts when Alex scrolls past section milestones
+// ==================================================================
+const SPLASH_COLORS=['#E9B44C','#4FD1C5','#5FB87A','#E06B5E','#9B7ED8','#F472B6'];
+const splashedSections=new Set();
+function colorSplash(x,y,count){
+  for(let i=0;i<(count||12);i++){
+    const p=document.createElement('div');
+    p.className='splash-particle';
+    const size=4+Math.random()*8;
+    const angle=Math.random()*Math.PI*2;
+    const dist=40+Math.random()*120;
+    p.style.cssText=`left:${x}px;top:${y}px;width:${size}px;height:${size}px;`+
+      `background:${SPLASH_COLORS[Math.floor(Math.random()*SPLASH_COLORS.length)]};`+
+      `--dx:${Math.cos(angle)*dist}px;--dy:${Math.sin(angle)*dist-40}px`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),1000);
+  }
+}
+const splashObserver=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(e.isIntersecting&&!splashedSections.has(e.target.id)){
+      splashedSections.add(e.target.id);
+      const r=e.target.getBoundingClientRect();
+      colorSplash(r.left+r.width/2,r.top+40,16);
+    }
+  });
+},{threshold:.3});
+document.querySelectorAll('section').forEach(s=>splashObserver.observe(s));
+
+// Also splash on feedback submit
+const origFbClick=document.getElementById('fb-send').onclick;
+document.getElementById('fb-send').addEventListener('click',()=>{
+  const btn=document.getElementById('fb-send');
+  const r=btn.getBoundingClientRect();
+  colorSplash(r.left+r.width/2,r.top,20);
+});
+
+// ==================================================================
+// DELIGHT LAYER 2: SUBTLE SOUNDS (Web Audio API, no external files)
+// ==================================================================
+let audioCtx;
+function ensureAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)()}
+
+function playTone(freq,dur,type,vol){
+  try{
+    ensureAudio();
+    const o=audioCtx.createOscillator();
+    const g=audioCtx.createGain();
+    o.type=type||'sine';
+    o.frequency.value=freq;
+    g.gain.value=vol||.06;
+    g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+(dur||.15));
+    o.connect(g);g.connect(audioCtx.destination);
+    o.start();o.stop(audioCtx.currentTime+(dur||.15));
+  }catch(e){}
+}
+
+function playChime(){playTone(880,.12,'sine',.05);setTimeout(()=>playTone(1100,.1,'sine',.04),80)}
+function playPop(){playTone(600,.08,'triangle',.06)}
+function playWin(){playTone(523,.15,'sine',.05);setTimeout(()=>playTone(659,.12,'sine',.04),120);setTimeout(()=>playTone(784,.2,'sine',.05),240)}
+
+// Chime when scrolling into a new section
+const soundedSections=new Set();
+const soundObserver=new IntersectionObserver(es=>{
+  es.forEach(e=>{
+    if(e.isIntersecting&&!soundedSections.has(e.target.id)){
+      soundedSections.add(e.target.id);
+      playPop();
+    }
+  });
+},{threshold:.4});
+document.querySelectorAll('section').forEach(s=>soundObserver.observe(s));
+
+// Chime on option-chip clicks
+document.querySelectorAll('.opt').forEach(b=>{
+  b.addEventListener('click',()=>playPop());
+});
+
+// ==================================================================
+// DELIGHT LAYER 3: FUN FACTS & SCHOLAR QUOTES
+// Pop up as toasts at intervals while Alex browses
+// ==================================================================
+const FUN_FACTS=[
+  {label:'Scholar fact',text:'Hudson Janow is a three-year GGP Scholar who co-founded Sunday Studios with fellow scholar Jonas Ma. Two people who met through this program now run a studio together.'},
+  {label:'Did you know?',text:'iAsia Brown, a CYSTEM alum, founded the iAsia Brown Scholarship Endowment Fund for LA game dev students. A scholar who built her own scholarship.'},
+  {label:'By the numbers',text:'At GDC 2026, CYSTEM sent 21 scholars with full passes. That is the largest cohort to date.'},
+  {label:'In their words',text:'"GGP made my entry into the games industry so much easier." — Hudson Janow, on camera at GDC 2026'},
+  {label:'The honest one',text:'"I love the program but didn\'t feel mentorship is one of the key pillars." — Year 1 exit survey. That one line is why this page exists.'},
+  {label:'Alumni spotlight',text:'JD Calvelli went from CYSTEM scholar to assistant professor at Long Island University. His thesis game Imogen won Excellence in Narrative at the RPI Game Festival.'},
+  {label:'Origin story',text:'Christopher Kim, a CYSTEM scholar, became Executive Producer of the Collegiate Games Challenge alongside Eugene Jarvis of Raw Thrills. A scholar who started a competition.'},
+  {label:'Full circle',text:'Every one of the featured scholars turned around and built something for the people behind them. A studio, an endowment, a competition, a classroom. That is not a coincidence.'},
+  {label:'Your doing',text:'The three-touch mentorship model came directly from scholars in the Year 1 exit survey. You listened. That is why it works.'},
+  {label:'Fun stat',text:'7 games shipped at Global Game Jam through triangle buddies in Year 3. Seven games, in 48 hours, because the right people were in the same room.'},
+  {label:'Did you know?',text:'The CYSTEM Discord server is live and workshops get announced with no formal registration. That informality is a feature, not a gap.'},
+  {label:'Why it matters',text:'Two scholars met, started Sunday Studios, and are now shipping games together. The program did not plan that. It just put them in the same cohort and got out of the way.'},
+];
+let factIndex=0;
+let factTimer;
+function showFunFact(){
+  if(document.querySelector('.fun-fact-toast'))return;
+  const fact=FUN_FACTS[factIndex%FUN_FACTS.length];
+  factIndex++;
+  const el=document.createElement('div');
+  el.className='fun-fact-toast';
+  el.innerHTML='<div class="ff-label">'+fact.label+'</div>'+fact.text+
+    '<button class="ff-close" aria-label="Close">&times;</button>';
+  document.body.appendChild(el);
+  playChime();
+  el.querySelector('.ff-close').addEventListener('click',()=>{
+    el.style.animation='toast-out .3s ease-in forwards';
+    setTimeout(()=>el.remove(),300);
+  });
+  setTimeout(()=>{
+    if(el.parentNode){el.style.animation='toast-out .3s ease-in forwards';setTimeout(()=>el.remove(),300)}
+  },8000);
+}
+// First fact after 25 seconds, then every 45 seconds
+setTimeout(()=>{showFunFact();factTimer=setInterval(showFunFact,45000)},25000);
+
+// ==================================================================
+// DELIGHT LAYER 4: SURPRISE MINI-GAMES
+// Hidden easter eggs Alex can discover
+// ==================================================================
+
+// GAME 1: Scholar Memory Match (triggered by clicking any stat tile 3x)
+let statClickCount=0;
+document.querySelectorAll('.stat').forEach(s=>{
+  s.style.cursor='pointer';
+  s.addEventListener('click',()=>{
+    statClickCount++;
+    playPop();
+    colorSplash(event.clientX,event.clientY,6);
+    if(statClickCount===3){statClickCount=0;launchMemoryGame()}
+  });
+});
+
+function launchMemoryGame(){
+  const pairs=[
+    ['Hudson','Sunday Studios'],['iAsia','Endowment Fund'],
+    ['JD','LIU Professor'],['Chris Kim','CGC Producer'],
+    ['Jonas','Co-founder'],['Scholars','21 at GDC']
+  ];
+  const deck=[...pairs,...pairs].map(([a,b],i)=>({id:Math.floor(i/2),face:i<pairs.length?a:b}));
+  for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]]}
+  // Only use first 8 cards (4 pairs) to keep it tight
+  const usedPairs=pairs.slice(0,4);
+  const gameDeck=[];
+  usedPairs.forEach((p,idx)=>{gameDeck.push({id:idx,face:p[0]});gameDeck.push({id:idx,face:p[1]})});
+  for(let i=gameDeck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[gameDeck[i],gameDeck[j]]=[gameDeck[j],gameDeck[i]]}
+
+  const ov=document.createElement('div');
+  ov.className='mini-game-overlay';
+  const box=document.createElement('div');
+  box.className='mini-game-box';
+  box.innerHTML='<button class="mg-close">&times;</button>'+
+    '<h3>Scholar Match</h3>'+
+    '<div class="mg-sub">Match each scholar to their achievement. You built this program, you know these names.</div>'+
+    '<div class="mg-grid" id="mg-grid"></div>'+
+    '<div class="mg-result" id="mg-result"></div>';
+  ov.appendChild(box);
+  document.body.appendChild(ov);
+  playChime();
+
+  const grid=box.querySelector('#mg-grid');
+  let flipped=[],matched=0,busy=false;
+
+  gameDeck.forEach((card,i)=>{
+    const cell=document.createElement('button');
+    cell.className='mg-cell';
+    cell.textContent='?';
+    cell.addEventListener('click',()=>{
+      if(busy||cell.classList.contains('matched')||cell.classList.contains('flipped'))return;
+      cell.classList.add('flipped');
+      cell.textContent=card.face;
+      playPop();
+      flipped.push({el:cell,card});
+      if(flipped.length===2){
+        busy=true;
+        const[a,b]=flipped;
+        if(a.card.id===b.card.id){
+          setTimeout(()=>{
+            a.el.classList.add('matched');b.el.classList.add('matched');
+            a.el.classList.remove('flipped');b.el.classList.remove('flipped');
+            matched++;
+            colorSplash(a.el.getBoundingClientRect().left+30,a.el.getBoundingClientRect().top+30,10);
+            if(matched===usedPairs.length){
+              box.querySelector('#mg-result').textContent='You know your scholars. They are lucky to have you.';
+              playWin();
+              colorSplash(window.innerWidth/2,window.innerHeight/2,30);
+            }
+            flipped=[];busy=false;
+          },400);
+        }else{
+          setTimeout(()=>{
+            a.el.classList.remove('flipped');b.el.classList.remove('flipped');
+            a.el.textContent='?';b.el.textContent='?';
+            flipped=[];busy=false;
+          },900);
+        }
+      }
+    });
+    grid.appendChild(cell);
+  });
+
+  box.querySelector('.mg-close').addEventListener('click',()=>ov.remove());
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+}
+
+// GAME 2: Quote quiz (triggered by clicking any blockquote)
+let quoteClicks=0;
+document.querySelectorAll('.q').forEach(q=>{
+  q.style.cursor='pointer';
+  q.addEventListener('click',()=>{
+    quoteClicks++;
+    if(quoteClicks>=2){quoteClicks=0;launchQuoteQuiz()}
+  });
+});
+
+function launchQuoteQuiz(){
+  const quizzes=[
+    {q:'Who said "GGP made my entry into the games industry so much easier"?',
+     opts:['Hudson Janow','JD Calvelli','iAsia Brown','Jonas Ma'],ans:0},
+    {q:'Which scholar founded their own scholarship endowment fund?',
+     opts:['Christopher Kim','iAsia Brown','KB','Hudson Janow'],ans:1},
+    {q:'How many games were shipped at Global Game Jam through triangle buddies?',
+     opts:['3','5','7','12'],ans:2},
+    {q:'Which two scholars co-lead Sunday Studios?',
+     opts:['JD & Jonas','Hudson & Jonas','Chris & KB','iAsia & JD'],ans:1},
+  ];
+  const quiz=quizzes[Math.floor(Math.random()*quizzes.length)];
+
+  const ov=document.createElement('div');
+  ov.className='mini-game-overlay';
+  const box=document.createElement('div');
+  box.className='mini-game-box';
+  box.innerHTML='<button class="mg-close">&times;</button>'+
+    '<h3>Quick quiz</h3>'+
+    '<div class="mg-sub">'+quiz.q+'</div>'+
+    '<div id="qq-opts" style="display:flex;flex-direction:column;gap:8px"></div>'+
+    '<div class="mg-result" id="qq-result"></div>';
+  ov.appendChild(box);
+  document.body.appendChild(ov);
+  playChime();
+
+  const optsDiv=box.querySelector('#qq-opts');
+  quiz.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt';
+    btn.style.textAlign='center';
+    btn.textContent=opt;
+    btn.addEventListener('click',()=>{
+      optsDiv.querySelectorAll('.opt').forEach(b=>b.disabled=true);
+      if(i===quiz.ans){
+        btn.setAttribute('aria-pressed','true');
+        box.querySelector('#qq-result').textContent='You know this program inside out.';
+        playWin();
+        colorSplash(btn.getBoundingClientRect().left+60,btn.getBoundingClientRect().top,18);
+      }else{
+        btn.style.borderColor='var(--risk)';
+        optsDiv.children[quiz.ans].setAttribute('aria-pressed','true');
+        box.querySelector('#qq-result').textContent='Close! The answer is '+quiz.opts[quiz.ans]+'.';
+        playPop();
+      }
+    });
+    optsDiv.appendChild(btn);
+  });
+
+  box.querySelector('.mg-close').addEventListener('click',()=>ov.remove());
+  ov.addEventListener('click',e=>{if(e.target===ov)ov.remove()});
+}
 </script>
 
 </body>
