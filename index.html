@@ -165,6 +165,18 @@ td.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:
   font-size:14px;line-height:1.62;white-space:pre-wrap;max-height:330px;overflow-y:auto;color:var(--ink2)}
 .paste b{color:var(--ink)}
 hr{border:none;border-top:1px solid var(--line);margin:34px 0}
+/* feedback log */
+.fb-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:14px}
+.fb-card h4{font-size:16px;margin:0 0 4px;font-weight:700;letter-spacing:-.01em}
+.fb-card .fb-meta{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-bottom:10px}
+.fb-card .fb-body{font-size:14.5px;color:var(--ink2);line-height:1.55;white-space:pre-wrap}
+.fb-card .fb-reply{margin-top:14px;padding:13px 15px;background:var(--surface2);border-radius:8px;
+  border-left:3px solid var(--cyan);font-size:14px;color:var(--ink2);line-height:1.55;white-space:pre-wrap}
+.fb-card .fb-reply .fb-reply-who{font-family:var(--f-mono);font-size:11px;color:var(--cyan);margin-bottom:6px;font-weight:600}
+.fb-card .fb-status-open{color:var(--gold)}
+.fb-card .fb-status-closed{color:var(--go)}
+.fb-card a{color:var(--gold);font-family:var(--f-mono);font-size:11px}
+
 .foot{color:var(--muted);font-size:13px;padding:26px 0 90px;border-top:1px solid var(--line);margin-top:40px}
 
 
@@ -237,7 +249,7 @@ hr{border:none;border-top:1px solid var(--line);margin:34px 0}
 <div class="shell">
   <aside class="rail">
     <h4>Sections</h4>
-    <nav><a href="#pages" data-sec="pages"><span>Two pages to forward</span><span class="chip" style="padding:2px 6px;font-size:9.5px">COPY</span></a><a href="#now" data-sec="now"><span>August, right now</span><span class="chip" style="padding:2px 6px;font-size:9.5px">URGENT</span></a><a href="#wins" data-sec="wins"><span>What we built</span><span class="dot"></span></a><a href="#cal" data-sec="cal"><span>The year, month by month</span><span class="dot"></span></a><a href="#alumni" data-sec="alumni"><span>Activating alumni</span><span class="dot"></span></a><a href="#crystal" data-sec="crystal"><span>Blizzard: your Crystal kit</span><span class="chip" style="padding:2px 6px;font-size:9.5px">HOT</span></a><a href="#blizzcon" data-sec="blizzcon"><span>BlizzCon, Sep 12</span><span class="chip" style="padding:2px 6px;font-size:9.5px">NEW</span></a><a href="#industry" data-sec="industry"><span>The field right now</span><span class="dot"></span></a><a href="#directory" data-sec="directory"><span>The Directory Project</span><span class="dot"></span></a><a href="#direction" data-sec="direction"><span>Where GGP goes next</span><span class="dot"></span></a><a href="#money" data-sec="money"><span>What this costs</span><span class="dot"></span></a></nav>
+    <nav><a href="#pages" data-sec="pages"><span>Two pages to forward</span><span class="chip" style="padding:2px 6px;font-size:9.5px">COPY</span></a><a href="#now" data-sec="now"><span>August, right now</span><span class="chip" style="padding:2px 6px;font-size:9.5px">URGENT</span></a><a href="#wins" data-sec="wins"><span>What we built</span><span class="dot"></span></a><a href="#cal" data-sec="cal"><span>The year, month by month</span><span class="dot"></span></a><a href="#alumni" data-sec="alumni"><span>Activating alumni</span><span class="dot"></span></a><a href="#crystal" data-sec="crystal"><span>Blizzard: your Crystal kit</span><span class="chip" style="padding:2px 6px;font-size:9.5px">HOT</span></a><a href="#blizzcon" data-sec="blizzcon"><span>BlizzCon, Sep 12</span><span class="chip" style="padding:2px 6px;font-size:9.5px">NEW</span></a><a href="#industry" data-sec="industry"><span>The field right now</span><span class="dot"></span></a><a href="#directory" data-sec="directory"><span>The Directory Project</span><span class="dot"></span></a><a href="#direction" data-sec="direction"><span>Where GGP goes next</span><span class="dot"></span></a><a href="#money" data-sec="money"><span>What this costs</span><span class="dot"></span></a><a href="#feedback" data-sec="feedback"><span>Feedback log</span><span class="chip cy" style="padding:2px 6px;font-size:9.5px">LIVE</span></a></nav>
     <div class="prog">
       <div class="n" id="pnum">0 of 11 answered</div>
       <div class="bar"><div class="fill" id="pfill"></div></div>
@@ -725,6 +737,30 @@ A strong, specific year that you have shaped is the thing that gets a partner to
     <textarea data-q="money" placeholder="Type here. It saves as you go."></textarea>
   </div>
 </section>
+<section id="feedback">
+  <div class="shead">
+    <h2>Feedback log</h2>
+    <div class="meta"><span class="chip cy">LIVE</span></div>
+  </div>
+  <p class="kicker">Spot something off? Have an idea? Drop it here. Every note files a public ticket, and Darby responds within five minutes with gratitude and a fix or a follow-up question. Your corrections make this stronger.</p>
+
+  <div class="ask" id="fb-compose">
+    <div class="lbl">Your feedback</div>
+    <div class="qq">What caught your eye? A wrong number, a missing name, a better way to frame something, a question you wish this page answered.</div>
+    <input type="text" id="fb-title" placeholder="Short title (e.g. 'BlizzCon date is wrong')" style="width:100%;background:var(--ground);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:11px 12px;font-family:var(--f-body);font-size:15px;margin-bottom:10px">
+    <textarea id="fb-body" placeholder="Details (optional). Be as specific as you like." style="min-height:76px"></textarea>
+    <div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <button class="btn" id="fb-send" type="button">Submit feedback</button>
+      <span id="fb-status" style="font-family:var(--f-mono);font-size:12px;color:var(--muted)"></span>
+    </div>
+  </div>
+
+  <div id="fb-log" style="margin-top:28px"></div>
+  <div id="fb-empty" style="display:none;text-align:center;padding:28px 0;color:var(--muted);font-size:14px">
+    No feedback yet. You could be the first.
+  </div>
+</section>
+
     <div class="foot">
       Built for Alex Rogers, CYSTEM Year 4 lead, on 7 August 2026.<br>
       Sources: the 2024 CYSTEM Report, the 2025-26 CYSTEM Calendar, Alex&rsquo;s own GDC 2026 Program Summary,
@@ -821,6 +857,77 @@ document.getElementById('clr').addEventListener('click',()=>{
   document.querySelectorAll('textarea').forEach(t=>t.value='');
   document.querySelectorAll('.opt').forEach(b=>b.setAttribute('aria-pressed','false'));
   paint();
+});
+
+// ---- FEEDBACK SYSTEM ----
+const FB_REPO='GordonUSC/cystem-2026-27';
+const FB_API='https://api.github.com/repos/'+FB_REPO;
+
+function fbTimeAgo(d){
+  const s=Math.floor((Date.now()-new Date(d))/1e3);
+  if(s<60)return 'just now';
+  if(s<3600)return Math.floor(s/60)+'m ago';
+  if(s<86400)return Math.floor(s/3600)+'h ago';
+  return Math.floor(s/86400)+'d ago';
+}
+
+function fbRenderCard(issue,comments){
+  const card=document.createElement('div');
+  card.className='fb-card';
+  const st=issue.state==='open'?'open':'closed';
+  const stLabel=st==='open'?'Awaiting reply':'Answered';
+  card.innerHTML=
+    '<h4>'+issue.title.replace(/</g,'&lt;')+'</h4>'+
+    '<div class="fb-meta"><span class="fb-status-'+st+'">'+stLabel+'</span> &middot; '+fbTimeAgo(issue.created_at)+
+    ' &middot; <a href="'+issue.html_url+'" target="_blank" rel="noopener">#'+issue.number+'</a></div>'+
+    '<div class="fb-body">'+(issue.body||'').replace(/</g,'&lt;')+'</div>';
+  if(comments&&comments.length){
+    comments.forEach(c=>{
+      card.innerHTML+=
+        '<div class="fb-reply">'+
+        '<div class="fb-reply-who">Darby &middot; '+fbTimeAgo(c.created_at)+'</div>'+
+        c.body.replace(/</g,'&lt;').replace(/\n/g,'<br>')+
+        '</div>';
+    });
+  }
+  return card;
+}
+
+async function fbLoad(){
+  const log=document.getElementById('fb-log');
+  const empty=document.getElementById('fb-empty');
+  try{
+    const res=await fetch(FB_API+'/issues?state=all&labels=feedback&sort=created&direction=desc&per_page=20');
+    if(!res.ok){log.innerHTML='<div style="color:var(--muted);font-size:13px">Could not load feedback. <a href="https://github.com/'+FB_REPO+'/issues?q=label:feedback" target="_blank">View on GitHub</a></div>';return;}
+    const issues=await res.json();
+    if(!issues.length){empty.style.display='block';return;}
+    empty.style.display='none';
+    log.innerHTML='';
+    const commentFetches=issues.map(i=>
+      i.comments>0?fetch(FB_API+'/issues/'+i.number+'/comments').then(r=>r.json()).catch(()=>[]):Promise.resolve([])
+    );
+    const allComments=await Promise.all(commentFetches);
+    issues.forEach((issue,idx)=>{
+      log.appendChild(fbRenderCard(issue,allComments[idx]));
+    });
+  }catch(e){log.innerHTML='<div style="color:var(--muted);font-size:13px">Could not load feedback.</div>';}
+}
+fbLoad();
+
+document.getElementById('fb-send').addEventListener('click',()=>{
+  const title=document.getElementById('fb-title').value.trim();
+  const body=document.getElementById('fb-body').value.trim();
+  const status=document.getElementById('fb-status');
+  if(!title){status.textContent='Please add a title.';status.style.color='var(--risk)';return;}
+  const issueUrl='https://github.com/'+FB_REPO+'/issues/new?'+
+    'labels=feedback&title='+encodeURIComponent(title)+
+    '&body='+encodeURIComponent((body||'(No additional details)')+'\n\n---\n*Submitted from the CYSTEM 2026-27 page*');
+  window.open(issueUrl,'_blank');
+  status.textContent='Opening GitHub... (sign in if prompted, then click Submit)';
+  status.style.color='var(--go)';
+  document.getElementById('fb-title').value='';
+  document.getElementById('fb-body').value='';
+  setTimeout(()=>{status.textContent='';fbLoad();},15000);
 });
 </script>
 
