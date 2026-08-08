@@ -165,8 +165,66 @@ td.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums;white-space:
   font-size:14px;line-height:1.62;white-space:pre-wrap;max-height:330px;overflow-y:auto;color:var(--ink2)}
 .paste b{color:var(--ink)}
 hr{border:none;border-top:1px solid var(--line);margin:34px 0}
+/* feedback section — new feature flourish */
+@keyframes fb-border-sweep{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+@keyframes fb-pulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.72;transform:scale(1.08)}
+}
+@keyframes fb-fadein{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes fb-shimmer{
+  0%{background-position:-200% 0}
+  100%{background-position:200% 0}
+}
+@keyframes fb-listening-dot{
+  0%,80%,100%{opacity:.25;transform:scale(.8)}
+  40%{opacity:1;transform:scale(1)}
+}
+
+#feedback{position:relative;animation:fb-fadein .6s ease-out both;scroll-margin-top:20px}
+#feedback::before{content:"";position:absolute;inset:-2px;border-radius:12px;z-index:-1;
+  background:linear-gradient(135deg,var(--gold),var(--cyan),var(--gold),var(--cyan));
+  background-size:300% 300%;animation:fb-border-sweep 6s ease infinite;opacity:.35}
+#feedback::after{content:"";position:absolute;inset:0;border-radius:10px;background:var(--ground);z-index:-1}
+
+.fb-new-badge{display:inline-flex;align-items:center;gap:5px;
+  background:linear-gradient(135deg,var(--gold),var(--cyan));-webkit-background-clip:text;
+  background-clip:text;-webkit-text-fill-color:transparent;
+  font-family:var(--f-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;font-weight:700}
+.fb-new-badge::before{content:"";width:7px;height:7px;border-radius:50%;
+  background:var(--cyan);animation:fb-pulse 2s ease-in-out infinite;flex:none}
+
+.fb-listening{display:inline-flex;gap:3px;align-items:center;margin-left:8px;vertical-align:middle}
+.fb-listening span{width:5px;height:5px;border-radius:50%;background:var(--cyan);
+  animation:fb-listening-dot 1.4s ease-in-out infinite}
+.fb-listening span:nth-child(2){animation-delay:.2s}
+.fb-listening span:nth-child(3){animation-delay:.4s}
+
+.fb-hero-bar{margin:-2px -2px 20px -2px;padding:14px 20px;border-radius:10px 10px 0 0;
+  background:linear-gradient(135deg,rgba(79,209,197,.08),rgba(233,180,76,.08));
+  border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.fb-hero-bar .fb-hero-icon{font-size:22px;line-height:1}
+.fb-hero-bar .fb-hero-text{font-size:13.5px;color:var(--ink2);flex:1;min-width:200px}
+.fb-hero-bar .fb-hero-text b{color:var(--ink);font-weight:650}
+
+/* shimmer on the submit button */
+#fb-send{position:relative;overflow:hidden}
+#fb-send::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.15) 50%,transparent 100%);
+  background-size:200% 100%;animation:fb-shimmer 3s ease-in-out infinite}
+
 /* feedback log */
-.fb-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:14px}
+.fb-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:14px;
+  animation:fb-fadein .4s ease-out both}
+.fb-card:nth-child(2){animation-delay:.08s}
+.fb-card:nth-child(3){animation-delay:.16s}
 .fb-card h4{font-size:16px;margin:0 0 4px;font-weight:700;letter-spacing:-.01em}
 .fb-card .fb-meta{font-family:var(--f-mono);font-size:11px;color:var(--muted);margin-bottom:10px}
 .fb-card .fb-body{font-size:14.5px;color:var(--ink2);line-height:1.55;white-space:pre-wrap}
@@ -738,11 +796,18 @@ A strong, specific year that you have shaped is the thing that gets a partner to
   </div>
 </section>
 <section id="feedback">
+  <div class="fb-hero-bar">
+    <div class="fb-hero-icon">&#x1F4AC;</div>
+    <div class="fb-hero-text"><b>New:</b> This page now listens. Drop a note below and <b>Darby replies in under five minutes</b> with a fix or a follow-up.
+      <span class="fb-listening"><span></span><span></span><span></span></span>
+    </div>
+    <span class="fb-new-badge">Live feedback</span>
+  </div>
   <div class="shead">
     <h2>Feedback log</h2>
     <div class="meta"><span class="chip cy">LIVE</span></div>
   </div>
-  <p class="kicker">Spot something off? Have an idea? Drop it here. Every note files a public ticket, and Darby responds within five minutes with gratitude and a fix or a follow-up question. Your corrections make this stronger.</p>
+  <p class="kicker">Spot something off? Have an idea? Your corrections make this stronger. Every note files a public ticket, and I respond within five minutes with gratitude and action. Nothing gets lost.</p>
 
   <div class="ask" id="fb-compose">
     <div class="lbl">Your feedback</div>
